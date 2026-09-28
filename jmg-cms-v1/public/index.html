@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow"><title>JMG CMS · Acceso</title>
+  <link rel="stylesheet" href="assets/css/app.css">
+</head>
+<body class="auth-page">
+  <main class="auth-shell">
+    <section class="auth-brand">
+      <a class="brand brand-xl" href="#">JMG<span>.</span></a>
+      <div><p class="kicker">CONTENT & DEPLOYMENT SYSTEM</p><h1>Una sola plataforma.<br>Todas tus webs.</h1><p class="lead">HTML, CSS y JavaScript libres por delante. Contenido editable, SEO, usuarios y deploys por detrás.</p></div>
+      <small>JMG Digital · CMS privado</small>
+    </section>
+    <section class="auth-panel">
+      <form id="login-form" class="auth-card">
+        <p class="kicker">ACCESO</p><h2>Entrar al CMS</h2><p class="muted">Usa tu cuenta JMG o la cuenta asignada al cliente.</p>
+        <div id="setup-warning" class="notice warning" hidden><strong>Falta configuración.</strong><span>Edita <code>assets/js/config.js</code> con la URL y publishable key de Supabase.</span></div>
+        <label>Email<input id="email" type="email" required autocomplete="email" placeholder="hola@jmgdigital.es"></label>
+        <label>Contraseña<input id="password" type="password" required autocomplete="current-password" placeholder="••••••••"></label>
+        <button class="btn primary wide" type="submit">Entrar</button>
+        <p id="error" class="form-error" hidden></p>
+      </form>
+    </section>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/config.js"></script><script src="assets/js/common.js"></script>
+  <script>
+  (async()=>{
+    const {db,configured,$}=JMG; if(!configured){$('#setup-warning').hidden=false;return}
+    const s=await JMG.session(); if(s){const p=await JMG.profile(); location.href=['superadmin','staff'].includes(p?.system_role)?'admin.html':'client.html';return}
+    $('#login-form').addEventListener('submit',async e=>{e.preventDefault();$('#error').hidden=true;const btn=e.submitter;btn.disabled=true;btn.textContent='Entrando…';const {data,error}=await db.auth.signInWithPassword({email:$('#email').value.trim(),password:$('#password').value});btn.disabled=false;btn.textContent='Entrar';if(error){$('#error').textContent=error.message;$('#error').hidden=false;return}const {data:p}=await db.from('jmg_profiles').select('*').eq('user_id',data.user.id).maybeSingle();location.href=['superadmin','staff'].includes(p?.system_role)?'admin.html':'client.html'});
+  })();
+  </script>
+</body></html>
